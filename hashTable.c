@@ -2,6 +2,9 @@
 #include <string.h>
 #include "hashTable.h"
 
+#define FNV_OFFSET_BASIS 2166136261
+#define FNV_PRIME 16777619
+
 /**
  * @brief Traverses a linked list of items for one with the correct 'key'
  * @param theItem
@@ -19,20 +22,20 @@ item *itemSearch(item *theItem, char *key) {
 
 /**
  * @brief Hashing function for the hash table implementation. Currently uses division method
+ *        Uses a 32bit FNV1-a hashing algorithm
+ *        See: http://programmers.stackexchange.com/questions/49550/which-hashing-algorithm-is-best-for-uniqueness-and-speed
  * @param hashTable - current hash table 
  * @param key - key to lookup the value by
  * @return index in our items array where we can find the value
  */
 int hashTableGetHash(table *hashTable, char *key)
 {
-	int hash = 0;
+	unsigned long hash = FNV_OFFSET_BASIS;
 	unsigned char *k = (unsigned char *)key;
 	while(*k != '\0') {  // Iterate over each character of the string
-		hash = *k + (hash << 2); // Set the new hash as the char's ascii value + (2 * the previous hash)
+		hash = (((int)k ^ hash) * FNV_PRIME);
 		k++;
 	}
-	
-	//printf("hash for %s: %d\n", key, hash % hashTable->size);
 	return hash % hashTable->size; //return an index within the bounds of our hash table size
 }
 
